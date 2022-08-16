@@ -1,0 +1,184 @@
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+<script type="text/javascript">
+
+    var account = null;
+    var contract = null;
+    const ABI = [
+        {
+            "inputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "_votingID",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "address",
+                    "name": "_candidate",
+                    "type": "address"
+                }
+            ],
+            "name": "takePartInVoting",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "votingID",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "candidate",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bool",
+                    "name": "existOnThisVoting",
+                    "type": "bool"
+                }
+            ],
+            "name": "candidateInfo",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_votingID",
+                    "type": "uint256"
+                }
+            ],
+            "name": "WithdrowMyPrize",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "counter",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_votingID",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getVotingInfo",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ];
+    const ADDRESS = "0x41c45164fb064cf62817e6595c4d38b310359570";
+
+    (async () => {
+        if (window.ethereum) {
+
+            await window.ethereum.send('eth_requestAccounts');
+            window.web3 = new Web3(window.ethereum);
+            contract = new web3.eth.Contract(ABI, ADDRESS);
+        }
+        else {
+            document.getElementById('wallet-address').textContent = "Please connect your MetaMask to Rinkeby network!";
+        }
+    })();
+
+    async function getInfoButton(index) {
+        var votingInfo = await contract.methods.getVotingInfo(index).call();
+        //console.log(votingInfo);
+
+        var textVotingInfo = "Started: " + votingInfo[0] + "<br/>" +
+            "StartDate: " + votingInfo[1] + "<br/>" +
+            "WinnerBalance: " + votingInfo[2] + "<br/>" +
+            "Bank: " + votingInfo[3] + "<br/>" +
+            "Winner: " + votingInfo[4] + "<br/>";
+
+        document.getElementById('votinginfo').innerHTML = textVotingInfo;
+
+
+        var results = await contract.getPastEvents(
+            'candidateInfo',
+            {
+                fromBlock: 0,
+                toBlock: 'latest',
+                filter: { votingID: index }
+
+            }
+        );
+        
+        let candidates = new Map();
+        for (i = 0; i < results.length; i++) {
+            candidates.set(results[i].returnValues[1],results[i].returnValues[2]);
+            
+        }
+        
+        var alltransactiontext = "Candidates: <br/>";
+        for (let cand of candidates) {
+            console.log(cand[1]);
+            if (cand[1]==true){
+                alltransactiontext = alltransactiontext + "<left>" + cand[0] + "</left><br/>";
+            }
+        }
+
+        document.getElementById('alltransactions').innerHTML = alltransactiontext;
+
+    }
+</script>
+
+
+<html>
+All vatings number:<span id="counter"></span>
+
+<form>
+    <input id="votingID" value="0" type="text">
+    <input type="button" value="Get Info" onclick="getInfoButton(document.getElementById('votingID').value)">
+</form>
+
+<span id="votinginfo"></span>
+<span id="alltransactions"></span>
+
+</html>
