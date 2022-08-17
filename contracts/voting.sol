@@ -13,25 +13,20 @@ contract VotingContract {
 
     struct Voting {
         bool started;
+        address Winner;
         uint256 StartDate;
         uint256 WinnerBalance;
         uint256 Bank;
-        address Winner;
+        uint256 Period;
         mapping(address => Candidate) Candidates;
     }
 
     mapping(uint256 => Voting) private Votings;
 
-    uint256 public immutable Period;
     uint8 public immutable Comission;
 
-    constructor(
-        uint256 _maxCandidatesNum,
-        uint256 _period,
-        uint8 _comission
-    ) {
-        owner = payable(msg.sender);
-        Period = _period;
+    constructor(uint256 _maxCandidatesNum, uint8 _comission) {
+        owner = msg.sender;
         Comission = _comission;
         maxCandidatesNum = _maxCandidatesNum;
     }
@@ -42,11 +37,12 @@ contract VotingContract {
     {
         require(Votings[_votingID].started, "Voting not started yet");
         require(
-            Votings[_votingID].StartDate + Period > block.timestamp,
+            Votings[_votingID].StartDate + Votings[_votingID].Period >
+                block.timestamp,
             "Voting is ended"
         );
         require(
-            Votings[_votingID].Candidates[_candidate].isExistOnThisVoting,
+            checkCandidate(_votingID, _candidate),
             "Candidate does not exist on this voting"
         );
         Votings[_votingID].Candidates[_candidate].balance += msg.value;
@@ -60,6 +56,28 @@ contract VotingContract {
                 .balance;
             Votings[_votingID].Winner = _candidate;
         }
+    }
+
+    function WithdrowMyPrize(uint256 _votingID) public {
+        require(
+            Votings[_votingID].StartDate + Votings[_votingID].Period <
+                block.timestamp,
+            "Voting is not over yet!"
+        );
+        require(
+            msg.sender == Votings[_votingID].Winner,
+            "You are not a winner!"
+        );
+        require(
+            Votings[_votingID].Bank > 0,
+            "You have already received your prize!"
+        );
+        uint256 amount = Votings[_votingID].Bank;
+        uint256 ownersComission = (Comission * amount) / 100;
+        uint256 clearAmount = amount - ownersComission;
+        Votings[_votingID].Bank = 0;
+        payable(owner).transfer(ownersComission);
+        payable(msg.sender).transfer(clearAmount);
     }
 
     function getVotingInfo(uint256 _votingID)
@@ -82,33 +100,24 @@ contract VotingContract {
         );
     }
 
-    function WithdrowMyPrize(uint256 _votingID) public {
-        require(
-            Votings[_votingID].StartDate + Period < block.timestamp,
-            "Voting is not over yet!"
-        );
-        require(
-            msg.sender == Votings[_votingID].Winner,
-            "You are not a winner!"
-        );
-        require(
-            Votings[_votingID].Bank > 0,
-            "You have already received your prize!"
-        );
-        uint256 amount = Votings[_votingID].Bank;
-        uint256 ownersComission = (Comission * amount) / 100;
-        uint256 clearAmount = amount - ownersComission;
-        Votings[_votingID].Bank = 0;
-        payable(owner).transfer(ownersComission);
-        payable(msg.sender).transfer(clearAmount);
+    function checkCandidate(uint256 _votingID, address _candidate)
+        public
+        view
+        returns (bool)
+    {
+        return (Votings[_votingID].Candidates[_candidate].isExistOnThisVoting);
     }
 
-    function addVoting(address[] calldata _candidates) public onlyOwner {
+    function addVoting(uint256 _period, address[] calldata _candidates)
+        public
+        onlyOwner
+    {
         require(_candidates.length < maxCandidatesNum, "Too many candidates!");
-        emit votingDraftCreated(counter);
+        Votings[counter].Period = _period;
         for (uint256 i = 0; i < _candidates.length; i++) {
             addCandidate(counter, _candidates[i]);
         }
+        emit votingDraftCreated(counter);
         counter++;
     }
 
@@ -116,6 +125,17 @@ contract VotingContract {
         Votings[_votingID].started = true;
         Votings[_votingID].StartDate = block.timestamp;
         emit votingStarted(_votingID, block.timestamp);
+    }
+
+    function editVotingPeriod(uint256 _votingID, uint256 _newPeriod)
+        public
+        onlyOwner
+    {
+        require(
+            Votings[_votingID].started == false,
+            "Voting has already begun!"
+        );
+        Votings[_votingID].Period = _newPeriod;
     }
 
     function addCandidate(uint256 _votingID, address _candidate)
