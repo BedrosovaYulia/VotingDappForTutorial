@@ -26,8 +26,16 @@ describe("VotingContract", function () {
         await myVotingContract.connect(accounts[0]).addVoting(180, candidates);
         const counter_after = await myVotingContract.counter();
         expect(counter_after-counter_before).to.equal(1);
-        const is_candidate1 = await myVotingContract.checkCandidate(counter_before, accounts[1].address);
-        expect(is_candidate1).to.equal(true);
+        const is_candidate5 = await myVotingContract.checkCandidate(counter_before, accounts[5].address);
+        expect(is_candidate5).to.equal(true);
+    });
+    it("Owner created another voting", async function () {
+        const counter_before = await myVotingContract.counter();
+        let candidates = new Array();
+        for (i = 1; i < 4; i++) candidates.push(accounts[i].address);
+        await myVotingContract.connect(accounts[0]).addVoting(180, candidates);
+        const is_candidate5 = await myVotingContract.checkCandidate(counter_before, accounts[5].address);
+        expect(is_candidate5).to.equal(false);
     });
     it("Candidate3 deleted", async function () {
         await myVotingContract.connect(accounts[0]).deleteCandidate(0, accounts[3].address);
