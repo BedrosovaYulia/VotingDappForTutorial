@@ -9,6 +9,7 @@
     "hardhat": "^2.10.2"
   },
   "dependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
     "solidity-coverage": "^0.7.21"
   }
 }

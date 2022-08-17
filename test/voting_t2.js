@@ -1,86 +1,69 @@
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-let accounts;
-let myVotingContract;
-const provider = ethers.provider;
 
 describe("VotingContract", function () {
-    it("Contract should be successfully deployed, account0 is owner", async function () {
-        accounts = await ethers.getSigners();
+    async function Fixture1() {
+        const accounts = await ethers.getSigners();
         VotingContract = await ethers.getContractFactory("VotingContract");
-        myVotingContract = await VotingContract.deploy(50, 5);
-        await myVotingContract.deployed();
-        expect(await myVotingContract.owner()).to.equal(accounts[0].address);
-    });
-    
-    it("Owner created a 3 votes, the counter is increased", async function(){
-        const counter_before = await myVotingContract.counter();
-        let candidates= new Array();
+        const myVotingContract = await VotingContract.deploy(50, 5);
+        let candidates = new Array();
         for (i = 1; i < 10; i++) candidates.push(accounts[i].address);
         await myVotingContract.connect(accounts[0]).addVoting(180, candidates);
+        await myVotingContract.connect(accounts[0]).startVoting(0);
+        return { myVotingContract, accounts };
+    }
+
+    async function Fixture2() {
+        const accounts = await ethers.getSigners();
+        VotingContract = await ethers.getContractFactory("VotingContract");
+        const myVotingContract = await VotingContract.deploy(50, 5);
+        let candidates = new Array();
+        for (i = 1; i < 10; i++) candidates.push(accounts[i].address);
         await myVotingContract.connect(accounts[0]).addVoting(180, candidates);
-        await myVotingContract.connect(accounts[0]).addVoting(180, candidates);
-        const counter_after = await myVotingContract.counter();
-        expect(counter_after-counter_before).to.equal(3);
-    });
-    
-    it("Voting 2 started", async function () {
-        await myVotingContract.connect(accounts[0]).startVoting(2);
-        const votingInfo = await myVotingContract.getVotingInfo(2);
-        //console.log(votingInfo);
-        expect(votingInfo[0]).to.equal(true);
-    });
-    it("Candidate3 can not be deleted after voting start", async function () {
-        await expect(
-            myVotingContract.connect(accounts[0]).deleteCandidate(2, accounts[3].address)
-        ).to.be.revertedWith("Voting has already begun!");
-    });
-    
-    it("Account 1 voted for Account 3", async function () {
+        await myVotingContract.connect(accounts[0]).startVoting(0);
         const amount = new ethers.BigNumber.from(10).pow(18).mul(1);
-        await myVotingContract.connect(accounts[1]).takePartInVoting(2, accounts[3].address, { value: amount });
-        const votingInfo = await myVotingContract.getVotingInfo(2);
-        //console.log(votingInfo);
-        expect(votingInfo[5]).to.equal(accounts[3].address);
-    });
-    it("Account 2 and 4 voted for Account 5", async function () {
-        const amount = new ethers.BigNumber.from(10).pow(18).mul(1);
-        await myVotingContract.connect(accounts[2]).takePartInVoting(2, accounts[5].address, { value: amount });
-        await myVotingContract.connect(accounts[2]).takePartInVoting(2, accounts[5].address, { value: amount });
-        const votingInfo = await myVotingContract.getVotingInfo(2);
-        //console.log(votingInfo);
-        expect(votingInfo[5]).to.equal(accounts[5].address);
-    });
-    it("Account 5 try to withdrow", async function () {
-        await expect(
-            myVotingContract.connect(accounts[5]).WithdrowMyPrize(2)
-        ).to.be.revertedWith("Voting is not over yet!");
-    });
-    it("Account 4 try to withdrow after time", async function () {
+        await myVotingContract.connect(accounts[1]).takePartInVoting(0, accounts[5].address, { value: amount });
+        await myVotingContract.connect(accounts[2]).takePartInVoting(0, accounts[5].address, { value: amount });
         await network.provider.send("evm_increaseTime", [200]);
         await network.provider.send("evm_mine");
+        const provider = ethers.provider;
+        return { myVotingContract, accounts, provider };
+    }
+
+    it("Account 5 is winner", async function () {
+        const { myVotingContract, accounts } = await loadFixture(Fixture1);
+        const amount = new ethers.BigNumber.from(10).pow(18).mul(1);
+        await myVotingContract.connect(accounts[1]).takePartInVoting(0, accounts[5].address, { value: amount });
+        await myVotingContract.connect(accounts[2]).takePartInVoting(0, accounts[5].address, { value: amount });
+        const votingInfo = await myVotingContract.getVotingInfo(0);
+        expect(votingInfo[5]).to.equal(accounts[5].address);
+    });
+
+    it("Account 4 is winner", async function () {
+        const { myVotingContract, accounts } = await loadFixture(Fixture1);
+        const amount = new ethers.BigNumber.from(10).pow(18).mul(1);
+        await myVotingContract.connect(accounts[1]).takePartInVoting(0, accounts[5].address, { value: amount });
+        await myVotingContract.connect(accounts[2]).takePartInVoting(0, accounts[4].address, { value: amount });
+        await myVotingContract.connect(accounts[3]).takePartInVoting(0, accounts[4].address, { value: amount });
+        const votingInfo = await myVotingContract.getVotingInfo(0);
+        expect(votingInfo[5]).to.equal(accounts[4].address);
+    });
+
+    it("Account 4 can't withdrow", async function () {
+        const { myVotingContract, accounts, provider } = await loadFixture(Fixture2);
         await expect(
-            myVotingContract.connect(accounts[4]).WithdrowMyPrize(2)
+            myVotingContract.connect(accounts[4]).WithdrowMyPrize(0)
         ).to.be.revertedWith("You are not a winner!");
     });
-    it("Nobody can't vote after finish", async function () {
-        const amount = new ethers.BigNumber.from(10).pow(18).mul(1);
-        await expect(
-            myVotingContract.connect(accounts[1]).takePartInVoting(2, accounts[3].address, { value: amount })
-        ).to.be.revertedWith("Voting is ended");
-    });
-    it("Account 5 got withdrow", async function () {
+
+    it("Account 5 can withdrow", async function () {
+        const { myVotingContract, accounts, provider } = await loadFixture(Fixture2);
         const balanceH2Before = await provider.getBalance(accounts[5].address);
-        await myVotingContract.connect(accounts[5]).WithdrowMyPrize(2);
+        await myVotingContract.connect(accounts[5]).WithdrowMyPrize(0);
         const balanceH2After = await provider.getBalance(accounts[5].address);
-        //console.log(balanceH2After);
         const balanceDif = balanceH2After - balanceH2Before;
         expect(balanceDif).greaterThan(0);
     });
-    it("Account 5 can't withdrow 2nd time", async function () {
-        await expect(
-            myVotingContract.connect(accounts[5]).WithdrowMyPrize(2)
-        ).to.be.revertedWith("You have already received your prize!");
-    });
-
+    
    });
