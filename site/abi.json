@@ -1,0 +1,324 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_votingID",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_candidate",
+                "type": "address"
+            }
+        ],
+        "name": "addCandidate",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_period",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address[]",
+                "name": "_candidates",
+                "type": "address[]"
+            }
+        ],
+        "name": "addVoting",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_votingID",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_candidate",
+                "type": "address"
+            }
+        ],
+        "name": "deleteCandidate",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_maxCandidatesNum",
+                "type": "uint256"
+            }
+        ],
+        "name": "setMaxCandidatesNum",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_votingID",
+                "type": "uint256"
+            }
+        ],
+        "name": "startVoting",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_maxCandidatesNum",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint8",
+                "name": "_comission",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "votingID",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "candidate",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "existOnThisVoting",
+                "type": "bool"
+            }
+        ],
+        "name": "candidateInfo",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_votingID",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_newPeriod",
+                "type": "uint256"
+            }
+        ],
+        "name": "editVotingPeriod",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint8",
+                "name": "_votingID",
+                "type": "uint8"
+            },
+            {
+                "internalType": "address",
+                "name": "_candidate",
+                "type": "address"
+            }
+        ],
+        "name": "takePartInVoting",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "votingID",
+                "type": "uint256"
+            }
+        ],
+        "name": "votingDraftCreated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "votingID",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "startDate",
+                "type": "uint256"
+            }
+        ],
+        "name": "votingStarted",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_votingID",
+                "type": "uint256"
+            }
+        ],
+        "name": "WithdrowMyPrize",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_votingID",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_candidate",
+                "type": "address"
+            }
+        ],
+        "name": "checkCandidate",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "Comission",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "counter",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_votingID",
+                "type": "uint256"
+            }
+        ],
+        "name": "getVotingInfo",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "maxCandidatesNum",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
