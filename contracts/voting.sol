@@ -59,6 +59,7 @@ contract VotingContract {
     }
 
     function WithdrowMyPrize(uint256 _votingID) public {
+        require(Votings[_votingID].started, "Voting not started yet");
         require(
             Votings[_votingID].StartDate + Votings[_votingID].Period <
                 block.timestamp,
@@ -88,12 +89,14 @@ contract VotingContract {
             uint256,
             uint256,
             uint256,
+            uint256,
             address
         )
     {
         return (
             Votings[_votingID].started,
             Votings[_votingID].StartDate,
+            Votings[_votingID].Period,
             Votings[_votingID].WinnerBalance,
             Votings[_votingID].Bank,
             Votings[_votingID].Winner
