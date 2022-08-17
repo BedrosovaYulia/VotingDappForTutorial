@@ -1,3 +1,6 @@
+const { block } = require("near-web3-provider/src/hydrate");
+const { blockObj } = require("near-web3-provider/src/near_to_eth_objects");
+
 require("@nomiclabs/hardhat-waffle");
 require('solidity-coverage');
 
@@ -19,4 +22,14 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  */
 module.exports = {
   solidity: "0.8.15",
+  defaultNetwork: "hardhat",
+  networks: {
+    hardhat: {
+      blockGasLimit: 30000,
+      accounts: {
+        count:1000
+      }
+    }
+  }
 };
+
