@@ -146,11 +146,11 @@ https://rinkeby.etherscan.io/address/0x125bbdf0b2e78694b7cc63f554dd185d39237753#
 
         document.getElementById('votinginfo').innerHTML = textVotingInfo;
 
-
+        //TO DO for live project: add pagination
         var results = await contract.getPastEvents(
             'candidateInfo',
             {
-                fromBlock: 0,
+                fromBlock: 11218642, //start from the block in which the contract was deployed
                 toBlock: 'latest',
                 filter: { votingID: index }
 
